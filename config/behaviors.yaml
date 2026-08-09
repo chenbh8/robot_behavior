@@ -1,0 +1,26 @@
+behaviors:
+
+  emergency:
+    priority: 100
+    request: false
+    interrupt:
+      - 80
+      - 50
+
+
+  task:
+    priority: 80
+    request: true
+    pause:
+      - 50
+    behavior_path: robot_behavior/config/behaviors/task.yaml
+
+
+  task_online:
+    priority: 50
+    request: false
+
+
+  dance:
+    priority: 50
+    request: false
