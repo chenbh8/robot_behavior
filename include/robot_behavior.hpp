@@ -1,8 +1,12 @@
 #pragma once
+#include <chrono>
 #include <memory>
 #include <string>
+#include <thread>
 #include <vector>
 
+#include "behaviortree_cpp/bt_factory.h"
+using namespace BT;
 namespace robot_behavior {
 
 enum class BehaviorState { IDLE, RUNNING, PAUSED };
@@ -55,9 +59,10 @@ public:
 
     BehaviorState state() const { return state_; }
 
-private:
+public:
     std::string id_;
 
+private:
     BehaviorState state_{BehaviorState::IDLE};
 };
 
@@ -96,16 +101,22 @@ public:
     void setEvent(const std::string& id, bool value);
 
     void tick();
+    BehaviorEntry* find(const std::string& id);
+    template <typename T>
+    void registerNode(const std::string& name) {
+        factory_.registerNodeType<T>(name);
+    }
 
 private:
-    BehaviorEntry* find(const std::string& id);
-
     bool contains(const std::vector<int>& list, int value);
 
     void arbitration(BehaviorEntry& entry);
 
 private:
     std::vector<BehaviorEntry> entries_;
+
+public:
+    BehaviorTreeFactory factory_;
 };
 
 }  // namespace robot_behavior

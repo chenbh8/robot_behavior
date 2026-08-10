@@ -1,0 +1,12 @@
+<root BTCPP_format="4" >
+    <include path="sub_trees/navigation.xml"/>
+    <include path="sub_trees/get_box.xml"/>
+    <include path="sub_trees/put_box.xml"/>
+     <BehaviorTree ID="MainTree">
+        <Sequence name="root">
+            <SubTree ID="navigation" target="{target}"/>
+            <SubTree ID="get_box" task_name="get_box_task"/>
+            <SubTree ID="put_box" task_name="put_box_task"/>
+        </Sequence>
+     </BehaviorTree>
+ </root>

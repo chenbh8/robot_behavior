@@ -9,6 +9,8 @@ find_package(behaviortree_cpp REQUIRED)
 
 add_library(robot_behavior SHARED
     src/robot_behavior.cpp
+    src/task.cpp
+    src/task_cloud.cpp
 )
 
 target_include_directories(robot_behavior

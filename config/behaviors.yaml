@@ -10,17 +10,13 @@ behaviors:
 
   task:
     priority: 80
-    request: true
+    request: false
     pause:
       - 50
-    behavior_path: robot_behavior/config/behaviors/task.yaml
+    behavior_path: ../config/trees/task.xml
 
 
-  task_online:
+  task_cloud:
     priority: 50
-    request: false
+    request: true
 
-
-  dance:
-    priority: 50
-    request: false

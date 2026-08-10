@@ -1,0 +1,7 @@
+ <root BTCPP_format="4" >
+     <BehaviorTree ID="get_box">
+        <Sequence name="root">
+            <Motion  task_name="{task_name}" />
+        </Sequence>
+     </BehaviorTree>
+ </root>
