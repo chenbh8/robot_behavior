@@ -1,4 +1,6 @@
 #pragma once
+#include "logger.h"
+
 #include <chrono>
 #include <memory>
 #include <string>

@@ -1,5 +1,6 @@
 #include "robot_behavior.hpp"
 
+#include "logger.h"
 #include <yaml-cpp/yaml.h>
 
 #include <algorithm>
@@ -7,6 +8,7 @@
 namespace robot_behavior {
 
 bool BehaviorManager::loadConfig(const std::string& file) {
+    LOG_INFO("loading config from: {}", file);
     auto root = YAML::LoadFile(file);
 
     for (auto item : root["behaviors"]) {
@@ -38,6 +40,11 @@ bool BehaviorManager::loadConfig(const std::string& file) {
             }
         }
 
+        LOG_INFO("loaded behavior: id={}, priority={}, interrupt_count={}, pause_count={}",
+                     entry.id,
+                     entry.priority,
+                     entry.interrupt.size(),
+                     entry.pause.size());
         entries_.push_back(entry);
     }
 
@@ -45,6 +52,7 @@ bool BehaviorManager::loadConfig(const std::string& file) {
         return a.priority > b.priority;
     });
 
+    LOG_INFO("config loaded, {} behaviors registered", entries_.size());
     return true;
 }
 
@@ -53,21 +61,32 @@ void BehaviorManager::addBehavior(std::shared_ptr<Behavior> behavior) {
 
     if (entry) {
         entry->behavior = behavior;
+        LOG_INFO("behavior added: {}", behavior->id());
+    } else {
+        LOG_WARN("behavior not found in config: {}", behavior->id());
     }
 }
 
 void BehaviorManager::setRequest(const std::string& id, bool value) {
     auto entry = find(id);
 
-    if (entry)
+    if (entry) {
         entry->request = value;
+        LOG_DEBUG("setRequest: id={}, value={}", id, value);
+    } else {
+        LOG_WARN("setRequest: unknown behavior id={}", id);
+    }
 }
 
 void BehaviorManager::setEvent(const std::string& id, bool value) {
     auto entry = find(id);
 
-    if (entry)
+    if (entry) {
         entry->active = value;
+        LOG_DEBUG("setEvent: id={}, value={}", id, value);
+    } else {
+        LOG_WARN("setEvent: unknown behavior id={}", id);
+    }
 }
 
 BehaviorEntry* BehaviorManager::find(const std::string& id) {
@@ -84,6 +103,7 @@ bool BehaviorManager::contains(const std::vector<int>& list, int value) {
 }
 
 void BehaviorManager::arbitration(BehaviorEntry& entry) {
+    LOG_DEBUG("arbitration: id={}, priority={}", entry.id, entry.priority);
     for (auto& other : entries_) {
         if (&entry == &other)
             continue;
@@ -102,10 +122,12 @@ void BehaviorManager::arbitration(BehaviorEntry& entry) {
             other.allowed_start = false;
 
             if (other.behavior->state() == BehaviorState::RUNNING) {
+                LOG_INFO("interrupt: {} stopped by {}", other.id, entry.id);
                 other.behavior->stop();
             }
         } else if (contains(entry.pause, other.priority)) {
             if (other.behavior->state() == BehaviorState::RUNNING) {
+                LOG_INFO("pause: {} paused by {}", other.id, entry.id);
                 other.behavior->pause();
             }
         }
@@ -144,12 +166,15 @@ void BehaviorManager::tick() {
 
         if (entry.allowed_start) {
             if (behavior->state() == BehaviorState::PAUSED) {
+                LOG_DEBUG("resume: {}", entry.id);
                 behavior->resume();
             } else {
+                LOG_DEBUG("start: {}", entry.id);
                 behavior->start();
             }
         } else {
             if (behavior->state() == BehaviorState::RUNNING) {
+                LOG_DEBUG("stop: {}", entry.id);
                 behavior->stop();
             }
         }

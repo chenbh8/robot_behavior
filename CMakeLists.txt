@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(yaml-cpp REQUIRED)
 find_package(behaviortree_cpp REQUIRED)
+find_package(spdlog REQUIRED)
 
 add_library(robot_behavior SHARED
     src/robot_behavior.cpp
@@ -21,6 +22,7 @@ target_include_directories(robot_behavior
 target_link_libraries(robot_behavior
     yaml-cpp
     BT::behaviortree_cpp
+    spdlog::spdlog
 )
 
 add_executable(demo
@@ -29,4 +31,5 @@ add_executable(demo
 
 target_link_libraries(demo
     robot_behavior
+    spdlog::spdlog
 )
