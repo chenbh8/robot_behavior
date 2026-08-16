@@ -1,8 +1,10 @@
 #include "robot_behavior.hpp"
 #include "task.hpp"
 #include "task_cloud.hpp"
-#include "logger.h"
+
 #include <csignal>
+
+#include "logger.h"
 using namespace robot_behavior;
 
 // class Navigation : public BT::SyncActionNode
@@ -74,24 +76,10 @@ public:
     void onHalted() override { LOG_INFO("Motion halted!"); }
 };
 
-std::atomic<bool> running{true};
-
-void signalHandler(int signal)
-{
-    if (signal == SIGINT) {
-        running = false;
-    }
-}
-
 int main() {
-    robot::Logger::init(
-        "logs/robot.log"
-    );
+    robot::Logger::init("logs/robot.log");
 
-
-    LOG_INFO(
-        "robot start"
-    );
+    LOG_INFO("robot start");
 
     BehaviorManager manager;
     manager.loadConfig("../config/behaviors.yaml");
@@ -99,10 +87,6 @@ int main() {
     manager.registerNode<Motion>("Motion");
     manager.addBehavior(std::make_shared<Task>(&manager));
     manager.addBehavior(std::make_shared<TaskCloud>(&manager));
-    while (running) {
-        manager.tick();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    }
-
+    manager.start();
     robot::Logger::shutdown();
 }

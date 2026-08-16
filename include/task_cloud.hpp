@@ -1,5 +1,6 @@
 #pragma once
 #include "robot_behavior.hpp"
+
 #include "logger.h"
 struct Action {
     bool is_init = false;

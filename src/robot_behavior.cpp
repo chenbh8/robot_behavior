@@ -1,10 +1,11 @@
 #include "robot_behavior.hpp"
 
-#include "logger.h"
 #include <yaml-cpp/yaml.h>
 
 #include <algorithm>
+#include <csignal>
 
+#include "logger.h"
 namespace robot_behavior {
 
 bool BehaviorManager::loadConfig(const std::string& file) {
@@ -41,10 +42,10 @@ bool BehaviorManager::loadConfig(const std::string& file) {
         }
 
         LOG_INFO("loaded behavior: id={}, priority={}, interrupt_count={}, pause_count={}",
-                     entry.id,
-                     entry.priority,
-                     entry.interrupt.size(),
-                     entry.pause.size());
+                 entry.id,
+                 entry.priority,
+                 entry.interrupt.size(),
+                 entry.pause.size());
         entries_.push_back(entry);
     }
 
@@ -54,6 +55,24 @@ bool BehaviorManager::loadConfig(const std::string& file) {
 
     LOG_INFO("config loaded, {} behaviors registered", entries_.size());
     return true;
+}
+
+std::atomic<bool> running{true};
+
+void signalHandler(int signal) {
+    if (signal == SIGINT) {
+        running = false;
+    }
+}
+
+void BehaviorManager::start() {
+    auto next_time = std::chrono::steady_clock::now();
+
+    while (running) {
+        next_time += std::chrono::seconds(1);
+        tick();
+        std::this_thread::sleep_until(next_time);
+    }
 }
 
 void BehaviorManager::addBehavior(std::shared_ptr<Behavior> behavior) {
@@ -138,6 +157,7 @@ void BehaviorManager::tick() {
     /*
      * 1. 初始化候选状态
      */
+    processTask();
     for (auto& entry : entries_) {
         if (!entry.behavior)
             continue;
@@ -190,6 +210,14 @@ void BehaviorManager::tick() {
         if (entry.behavior->state() == BehaviorState::RUNNING) {
             entry.behavior->tick();
         }
+    }
+}
+
+void BehaviorManager::processTask() {
+    std::function<void()> task;
+
+    while (task_queue_.try_dequeue(task)) {
+        task();
     }
 }
 

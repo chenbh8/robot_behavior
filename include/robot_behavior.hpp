@@ -1,6 +1,4 @@
 #pragma once
-#include "logger.h"
-
 #include <chrono>
 #include <memory>
 #include <string>
@@ -8,6 +6,9 @@
 #include <vector>
 
 #include "behaviortree_cpp/bt_factory.h"
+#include "blockingconcurrentqueue.h"
+#include "logger.h"
+using moodycamel::BlockingConcurrentQueue;
 using namespace BT;
 namespace robot_behavior {
 
@@ -94,6 +95,7 @@ struct BehaviorEntry {
 
 class BehaviorManager {
 public:
+    void start();
     bool loadConfig(const std::string& file);
 
     void addBehavior(std::shared_ptr<Behavior> behavior);
@@ -113,9 +115,11 @@ private:
     bool contains(const std::vector<int>& list, int value);
 
     void arbitration(BehaviorEntry& entry);
+    void processTask();
 
 private:
     std::vector<BehaviorEntry> entries_;
+    BlockingConcurrentQueue<std::function<void()>> task_queue_;
 
 public:
     BehaviorTreeFactory factory_;

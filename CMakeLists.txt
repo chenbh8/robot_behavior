@@ -17,6 +17,7 @@ add_library(robot_behavior SHARED
 target_include_directories(robot_behavior
     PUBLIC
     include
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/concurrentqueue
 )
 
 target_link_libraries(robot_behavior

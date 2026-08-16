@@ -57,9 +57,9 @@ void TaskCloud::tick() {
     // 1. tick当前组里面还没完成的action
     for (auto& action : group) {
         LOG_DEBUG("step_index: {}, task_cloud tick: {}, status: {}",
-                      step_index_,
-                      action.name,
-                      static_cast<int>(action.status));
+                  step_index_,
+                  action.name,
+                  static_cast<int>(action.status));
         if (action.status == BT::NodeStatus::SUCCESS) {
             continue;  // 已完成，不再tick
         }
